@@ -10,6 +10,7 @@ mod erg_btc;
 mod erg_usd;
 mod erg_xau;
 mod predef;
+mod erg_xag;
 
 use crate::oracle_types::Rate;
 use crate::pool_config::PredefinedDataPointSource;

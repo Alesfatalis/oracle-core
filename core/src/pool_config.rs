@@ -56,6 +56,7 @@ pub struct PoolConfig {
 pub enum PredefinedDataPointSource {
     NanoErgUsd,
     NanoErgXau,
+    NanoErgXag,
     NanoAdaUsd,
     NanoErgBTC,
 }

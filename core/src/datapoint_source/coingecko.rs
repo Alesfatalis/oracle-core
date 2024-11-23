@@ -6,6 +6,7 @@ use super::ada_usd::Lovelace;
 use super::assets_exchange_rate::Btc;
 use super::assets_exchange_rate::Usd;
 use super::erg_xau::KgAu;
+use super::erg_xag::KgAg;
 
 #[cfg(not(test))]
 pub async fn get_kgau_nanoerg() -> Result<AssetsExchangeRate<KgAu, NanoErg>, DataPointSourceError> {
@@ -32,10 +33,45 @@ pub async fn get_kgau_nanoerg() -> Result<AssetsExchangeRate<KgAu, NanoErg>, Dat
 
 #[cfg(test)]
 pub async fn get_kgau_nanoerg() -> Result<AssetsExchangeRate<KgAu, NanoErg>, DataPointSourceError> {
-    let nanoerg_per_troy_ounce = NanoErg::from_erg(1.0 / 0.0008162);
+    let nanoerg_per_troy_ounce = NanoErg::from_erg(1.0 / 0.0482);
     let nanoerg_per_kg = KgAu::from_troy_ounce(nanoerg_per_troy_ounce);
     let rate = AssetsExchangeRate {
         per1: KgAu {},
+        get: NanoErg {},
+        rate: nanoerg_per_kg,
+    };
+    Ok(rate)
+}
+
+#[cfg(not(test))]
+pub async fn get_kgag_nanoerg() -> Result<AssetsExchangeRate<KgAg, NanoErg>, DataPointSourceError> {
+    let url = "https://api.coingecko.com/api/v3/simple/price?ids=ergo&vs_currencies=XAG";
+    let resp = reqwest::get(url).await?;
+    let price_json = json::parse(&resp.text().await?)?;
+    if let Some(p) = price_json["ergo"]["xag"].as_f64() {
+        // Convert from price Erg/XAG to nanoErgs per 1 XAG
+        let nanoerg_per_troy_ounce = NanoErg::from_erg(1.0 / p);
+        let nanoerg_per_kg = KgAg::from_troy_ounce(nanoerg_per_troy_ounce);
+        let rate = AssetsExchangeRate {
+            per1: KgAg {},
+            get: NanoErg {},
+            rate: nanoerg_per_kg,
+        };
+        Ok(rate)
+    } else {
+        Err(DataPointSourceError::JsonMissingField {
+            field: "ergo.xag as f64".to_string(),
+            json: price_json.dump(),
+        })
+    }
+}
+
+#[cfg(test)]
+pub async fn get_kgag_nanoerg() -> Result<AssetsExchangeRate<KgAg, NanoErg>, DataPointSourceError> {
+    let nanoerg_per_troy_ounce = NanoErg::from_erg(1.0 / 0.0706);
+    let nanoerg_per_kg = KgAg::from_troy_ounce(nanoerg_per_troy_ounce);
+    let rate = AssetsExchangeRate {
+        per1: KgAg {},
         get: NanoErg {},
         rate: nanoerg_per_kg,
     };
@@ -152,6 +188,13 @@ mod tests {
     fn test_erg_xau_price() {
         let pair: AssetsExchangeRate<KgAu, NanoErg> =
             tokio_test::block_on(get_kgau_nanoerg()).unwrap();
+        assert!(pair.rate > 0.0);
+    }
+    
+    #[test]
+    fn test_erg_xag_price() {
+        let pair: AssetsExchangeRate<KgAg, NanoErg> = 
+            tokio_test::block_on(get_kgag_nanoerg()).unwrap();
         assert!(pair.rate > 0.0);
     }
 

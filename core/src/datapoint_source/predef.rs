@@ -26,6 +26,9 @@ async fn fetch_predef_source_aggregated(
         PredefinedDataPointSource::NanoErgXau => {
             fetch_aggregated(nanoerg_kgau_sources()).await?.rate
         }
+        PredefinedDataPointSource::NanoErgXag => {
+            fetch_aggregated(nanoerg_kgau_sources()).await?.rate
+        }
         PredefinedDataPointSource::NanoAdaUsd => {
             fetch_aggregated(usd_lovelace_sources()).await?.rate
         }
