@@ -59,6 +59,7 @@ pub enum PredefinedDataPointSource {
     NanoErgXag,
     NanoAdaUsd,
     NanoErgBTC,
+    RsnXag,
 }
 
 /// Holds the token ids of every important token used by the oracle pool.

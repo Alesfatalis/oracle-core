@@ -1,8 +1,8 @@
 use super::assets_exchange_rate::AssetsExchangeRate;
 use super::assets_exchange_rate::Btc;
 use super::assets_exchange_rate::Usd;
-use super::erg_xau::KgAu;
 use super::erg_xag::KgAg;
+use super::erg_xau::KgAu;
 use super::DataPointSourceError;
 
 #[derive(Debug, Clone)]
@@ -139,13 +139,13 @@ mod tests {
         let pair: AssetsExchangeRate<KgAu, Usd> = tokio_test::block_on(get_kgau_usd()).unwrap();
         assert!(pair.rate > 0.0);
     }
-    
+
     #[test]
     fn test_kgag_usd_price() {
         let pair: AssetsExchangeRate<KgAg, Usd> = tokio_test::block_on(get_kgag_usd()).unwrap();
         assert!(pair.rate > 0.0);
     }
-    
+
     #[test]
     fn test_btc_usd_price() {
         let pair: AssetsExchangeRate<Btc, Usd> = tokio_test::block_on(get_btc_usd()).unwrap();

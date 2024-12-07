@@ -1,3 +1,4 @@
+use crate::datapoint_source::rsn_xag::rsn_kgag_sources;
 use crate::oracle_types::Rate;
 
 use super::ada_usd::usd_lovelace_sources;
@@ -35,6 +36,7 @@ async fn fetch_predef_source_aggregated(
         PredefinedDataPointSource::NanoErgBTC => {
             fetch_aggregated(nanoerg_btc_sources()).await?.rate
         }
+        PredefinedDataPointSource::RsnXag => fetch_aggregated(rsn_kgag_sources()).await?.rate,
     };
     Ok((rate_float as i64).into())
 }

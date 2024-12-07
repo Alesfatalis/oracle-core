@@ -4,10 +4,12 @@ use std::pin::Pin;
 
 use futures::Future;
 
-use crate::datapoint_source::assets_exchange_rate::{convert_rate, Asset, AssetsExchangeRate, NanoErg};
-use crate::datapoint_source::{bitpanda, coingecko, DataPointSourceError};
 use crate::datapoint_source::aggregator::fetch_aggregated;
+use crate::datapoint_source::assets_exchange_rate::{
+    convert_rate, Asset, AssetsExchangeRate, NanoErg,
+};
 use crate::datapoint_source::erg_usd::nanoerg_usd_sources;
+use crate::datapoint_source::{bitpanda, coingecko, DataPointSourceError};
 
 #[derive(Debug, Clone, Copy)]
 pub struct KgAg {}
@@ -25,7 +27,7 @@ impl KgAg {
         // troy ounces per kg
         oz * 32.150746568627
     }
-    
+
     pub fn from_gram(g: f64) -> f64 {
         g * 1000.0
     }
@@ -33,7 +35,7 @@ impl KgAg {
 
 #[allow(clippy::type_complexity)]
 pub fn nanoerg_kgag_sources() -> Vec<
-Pin<Box<dyn Future<Output = Result<AssetsExchangeRate<KgAg, NanoErg>, DataPointSourceError>>>>,
+    Pin<Box<dyn Future<Output = Result<AssetsExchangeRate<KgAg, NanoErg>, DataPointSourceError>>>>,
 > {
     vec![
         Box::pin(coingecko::get_kgag_nanoerg()),

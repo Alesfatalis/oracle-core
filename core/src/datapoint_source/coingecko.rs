@@ -1,12 +1,12 @@
-use crate::datapoint_source::assets_exchange_rate::AssetsExchangeRate;
-use crate::datapoint_source::assets_exchange_rate::NanoErg;
-use crate::datapoint_source::DataPointSourceError;
-
 use super::ada_usd::Lovelace;
 use super::assets_exchange_rate::Btc;
 use super::assets_exchange_rate::Usd;
-use super::erg_xau::KgAu;
 use super::erg_xag::KgAg;
+use super::erg_xau::KgAu;
+use crate::datapoint_source::assets_exchange_rate::AssetsExchangeRate;
+use crate::datapoint_source::assets_exchange_rate::NanoErg;
+use crate::datapoint_source::rsn_xag::Rsn;
+use crate::datapoint_source::DataPointSourceError;
 
 #[cfg(not(test))]
 pub async fn get_kgau_nanoerg() -> Result<AssetsExchangeRate<KgAu, NanoErg>, DataPointSourceError> {
@@ -180,6 +180,46 @@ pub async fn get_btc_nanoerg() -> Result<AssetsExchangeRate<Btc, NanoErg>, DataP
     Ok(rate)
 }
 
+pub async fn get_kgag_rsn() -> Result<AssetsExchangeRate<KgAg, Rsn>, DataPointSourceError> {
+    let url = "https://api.coingecko.com/api/v3/simple/price?ids=rosen-bridge&vs_currencies=XAG";
+    let resp = reqwest::get(url).await?;
+    let price_json = json::parse(&resp.text().await?)?;
+    if let Some(p) = price_json["rosen-bridge"]["xag"].as_f64() {
+        // Convert from price RSN/XAG
+        let rsn_per_ag = KgAg::from_troy_ounce(1.0 / p);
+        let rate = AssetsExchangeRate {
+            per1: KgAg {},
+            get: Rsn {},
+            rate: rsn_per_ag,
+        };
+        Ok(rate)
+    } else {
+        Err(DataPointSourceError::JsonMissingField {
+            field: "rsn.xag as f64".to_string(),
+            json: price_json.dump(),
+        })
+    }
+}
+
+pub async fn get_rsn_usd() -> Result<AssetsExchangeRate<Usd, Rsn>, DataPointSourceError> {
+    let url = "https://api.coingecko.com/api/v3/simple/price?ids=rosen-bridge&vs_currencies=USD";
+    let resp = reqwest::get(url).await?;
+    let price_json = json::parse(&resp.text().await?)?;
+    if let Some(p) = price_json["rosen-bridge"]["usd"].as_f64() {
+        let rate = AssetsExchangeRate {
+            per1: Usd {},
+            get: Rsn {},
+            rate: 1.0 / p,
+        };
+        Ok(rate)
+    } else {
+        Err(DataPointSourceError::JsonMissingField {
+            field: "rsn.usd as f64".to_string(),
+            json: price_json.dump(),
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -190,10 +230,10 @@ mod tests {
             tokio_test::block_on(get_kgau_nanoerg()).unwrap();
         assert!(pair.rate > 0.0);
     }
-    
+
     #[test]
     fn test_erg_xag_price() {
-        let pair: AssetsExchangeRate<KgAg, NanoErg> = 
+        let pair: AssetsExchangeRate<KgAg, NanoErg> =
             tokio_test::block_on(get_kgag_nanoerg()).unwrap();
         assert!(pair.rate > 0.0);
     }
@@ -215,6 +255,18 @@ mod tests {
     fn test_erg_btc_price() {
         let pair: AssetsExchangeRate<Btc, NanoErg> =
             tokio_test::block_on(get_btc_nanoerg()).unwrap();
+        assert!(pair.rate > 0.0);
+    }
+
+    #[test]
+    fn test_rsn_xag_price() {
+        let pair: AssetsExchangeRate<KgAg, Rsn> = tokio_test::block_on(get_kgag_rsn()).unwrap();
+        assert!(pair.rate > 0.0);
+    }
+
+    #[test]
+    fn test_rsn_usd_price() {
+        let pair: AssetsExchangeRate<Usd, Rsn> = tokio_test::block_on(get_rsn_usd()).unwrap();
         assert!(pair.rate > 0.0);
     }
 }
