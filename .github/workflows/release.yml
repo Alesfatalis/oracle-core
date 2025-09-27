@@ -29,9 +29,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  upload-asset-x86-ubuntu-24:
+  upload-asset-x86-ubuntu-22:
     runs-on: ubuntu-latest
-    container: 'ubuntu:24.04'
+    container: 'ubuntu:22.04'
     steps:
       - name: Install dependencies
         run: |
